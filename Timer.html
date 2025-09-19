@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Countdown Timer</title>
+<style>
+.countdown-container {
+max-width: 400px;
+margin: 50px auto;
+padding: 30px;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+border-radius: 20px;
+box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+text-align: center;
+color: white;
+font-family: 'Arial', sans-serif;
+}
+
+.event-title {
+font-size: 1.8em;
+margin-bottom: 10px;
+font-weight: bold;
+}
+
+.event-date {
+font-size: 1em;
+margin-bottom: 30px;
+opacity: 0.9;
+}
+
+.countdown-timer {
+display: flex;
+justify-content: center;
+gap: 15px;
+margin-bottom: 20px;
+flex-wrap: wrap;
+}
+
+.time-unit {
+background: rgba(255,255,255,0.1);
+backdrop-filter: blur(10px);
+border-radius: 12px;
+padding: 20px 10px;
+min-width: 70px;
+border: 1px solid rgba(255,255,255,0.2);
+}
+
+.time-number {
+font-size: 2.5em;
+font-weight: bold;
+display: block;
+line-height: 1;
+}
+
+.time-label {
+font-size: 0.8em;
+text-transform: uppercase;
+letter-spacing: 1px;
+margin-top: 5px;
+opacity: 0.8;
+}
+
+.expired {
+color: #ff6b6b;
+animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 1; }
+50% { opacity: 0.7; }
+}
+
+.settings-panel {
+margin-top: 20px;
+padding: 15px;
+background: rgba(255,255,255,0.1);
+border-radius: 10px;
+}
+
+.settings-panel input {
+margin: 5px;
+padding: 8px;
+border: none;
+border-radius: 5px;
+width: 200px;
+}
+
+.settings-panel button {
+background: rgba(255,255,255,0.2);
+color: white;
+border: none;
+padding: 8px 15px;
+border-radius: 5px;
+cursor: pointer;
+margin: 5px;
+}
+
+.settings-panel button:hover {
+background: rgba(255,255,255,0.3);
+}
+</style>
+</head>
+<body>
+<div class="countdown-container" id="countdownContainer">
+<div class="event-title" id="eventTitle">Festa di Capodanno</div>
+<div class="event-date" id="eventDate">31 Dicembre 2024</div>
+
+<div class="countdown-timer" id="countdownTimer">
+<div class="time-unit">
+<span class="time-number" id="days">00</span>
+<span class="time-label">Giorni</span>
+</div>
+<div class="time-unit">
+<span class="time-number" id="hours">00</span>
+<span class="time-label">Ore</span>
+</div>
+<div class="time-unit">
+<span class="time-number" id="minutes">00</span>
+<span class="time-label">Minuti</span>
+</div>
+<div class="time-unit">
+<span class="time-number" id="seconds">00</span>
+<span class="time-label">Secondi</span>
+</div>
+</div>
+
+<div class="expired" id="expiredMessage" style="display: none;">
+🎉 L'evento è iniziato! 🎉
+</div>
+
+<div class="settings-panel" id="settingsPanel">
+<input type="text" id="titleInput" placeholder="Nome dell'evento" value="Festa di Capodanno">
+<input type="date" id="dateInput" value="2024-12-31">
+<button onclick="updateCountdown()">Aggiorna</button>
+<button onclick="toggleSettings()">Nascondi</button>
+</div>
+</div>
+
+<script>
+// Configurazione iniziale - MODIFICA QUESTI VALORI
+let eventConfig = {
+title: "Festa di Capodanno",
+date: "2024-12-31T23:59:59"
+};
+
+function updateCountdown() {
+// Recupera i valori dai campi di input
+eventConfig.title = document.getElementById('titleInput').value || 'Evento Speciale';
+const dateInput = document.getElementById('dateInput').value;
+
+if (dateInput) {
+// Imposta l'ora a 23:59:59 del giorno selezionato
+const date = new Date(dateInput);
+date.setHours(23, 59, 59, 0);
+eventConfig.date = date.toISOString();
+}
+
+// Aggiorna il display
+document.getElementById('eventTitle').textContent = eventConfig.title;
+document.getElementById('eventDate').textContent = new Date(eventConfig.date).toLocaleDateString('it-IT');
+
+// Riavvia il timer
+clearInterval(window.countdownInterval);
+startCountdown();
+}
+
+function startCountdown() {
+const targetDate = new Date(eventConfig.date).getTime();
+
+window.countdownInterval = setInterval(function() {
+const now = new Date().getTime();
+const distance = targetDate - now;
+
+if (distance < 0) {
+// Evento scaduto
+clearInterval(window.countdownInterval);
+document.getElementById('countdownTimer').style.display = 'none';
+document.getElementById('expiredMessage').style.display = 'block';
+document.getElementById('expiredMessage').classList.add('expired');
+return;
+}
+
+// Calcola il tempo rimanente
+const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+// Aggiorna il display
+document.getElementById('days').textContent = days.toString().padStart(2, '0');
+document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+
+}, 1000);
+}
+
+function toggleSettings() {
+const panel = document.getElementById('settingsPanel');
+panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+// Inizializza al caricamento della pagina
+document.addEventListener('DOMContentLoaded', function() {
+// Imposta i valori iniziali nei campi
+document.getElementById('titleInput').value = eventConfig.title;
+document.getElementById('dateInput').value = eventConfig.date.split('T')[0];
+
+updateCountdown();
+});
+
+// Versione semplificata senza pannello di impostazioni
+function createSimpleCountdown(title, targetDate) {
+eventConfig.title = title;
+eventConfig.date = targetDate;
+updateCountdown();
+}
+
+// Esempi di utilizzo:
+// createSimpleCountdown("Matrimonio Anna", "2025-06-15T14:00:00");
+// createSimpleCountdown("Conferenza Tech", "2025-03-20T09:00:00");
+</script>
+</body>
+</html>
